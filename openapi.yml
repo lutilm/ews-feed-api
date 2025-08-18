@@ -1,0 +1,98 @@
+openapi: 3.0.0
+info:
+  title: News Fetching API
+  version: 1.0.0
+  description: API to fetch news articles based on specified terms.
+servers:
+  - url: https://xxxxxx/api
+    description: Vercel Deployment
+paths:
+  /news:
+    get:
+      summary: Fetch News Articles
+      description: Retrieves news articles based on specified search terms.
+      operationId: getNewsArticles  # Added operationId here
+      parameters:
+        - in: query
+          name: terms
+          required: true
+          schema:
+            type: string
+          description: Comma-separated list of search terms (tecnologies, vendors, or products, like Microsoft Windows, IBM Websphere, etc..).
+        - in: query
+          name: last
+          required: false
+          schema:
+            type: string
+          description: Retrieve articles/bulletins/CVE published in the last N hours. (default should be 24 hours)
+        - in: query
+          name: count
+          required: false
+          schema:
+            type: integer
+          description: Number of articles to retrieve (default should be 50).
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Successful response with news articles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Article'
+        '400':
+          description: Bad request, missing terms or API key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized, invalid API key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error or failed to authenticate the backend services.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Article:
+      type: object
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        crawled:
+          type: string
+          format: date-time
+        published:
+          type: string
+          format: date-time
+        content_txt:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+securitySchemes:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: X-API-KEY
